@@ -1,0 +1,156 @@
+# include "test_s21_tetris.h"
+
+# suite tetris
+
+# test userInput_0
+UserAction_t action = Start;
+bool hold = 0;
+userInput(action, hold);
+UserAction_t *input = get_instance_input_to_fsm();
+ck_assert_int_eq(*input, Start);
+
+# test userInput_1
+UserAction_t action = Pause;
+bool hold = 0;
+userInput(action, hold);
+UserAction_t *input = get_instance_input_to_fsm();
+ck_assert_int_eq(*input, Pause);
+
+# test userInput_2
+UserAction_t action = Terminate;
+bool hold = 0;
+userInput(action, hold);
+UserAction_t *input = get_instance_input_to_fsm();
+ck_assert_int_eq(*input, Terminate);
+
+# test userInput_3
+UserAction_t action = Left;
+bool hold = 0;
+userInput(action, hold);
+UserAction_t *input = get_instance_input_to_fsm();
+ck_assert_int_eq(*input, Left);
+
+# test userInput_4
+UserAction_t action = Right;
+bool hold = 0;
+userInput(action, hold);
+UserAction_t *input = get_instance_input_to_fsm();
+ck_assert_int_eq(*input, Right);
+
+# test userInput_5
+UserAction_t action = Up;
+bool hold = 0;
+userInput(action, hold);
+UserAction_t *input = get_instance_input_to_fsm();
+ck_assert_int_eq(*input, Up);
+
+# test userInput_6
+UserAction_t action = Down;
+bool hold = 0;
+userInput(action, hold);
+UserAction_t *input = get_instance_input_to_fsm();
+ck_assert_int_eq(*input, Down);
+
+# test userInput_7
+UserAction_t action = Action;
+bool hold = 0;
+userInput(action, hold);
+UserAction_t *input = get_instance_input_to_fsm();
+ck_assert_int_eq(*input, Action);
+
+# test fsm_0
+UserAction_t action = Start;
+bool hold = 0;
+userInput(action, hold);
+finite_state_machine *fsm = get_instance_fsm();
+ck_assert_int_eq(*fsm, spawn);
+
+# test fsm_1
+UserAction_t action = Action;
+bool hold = 0;
+userInput(action, hold);
+finite_state_machine *fsm = get_instance_fsm();
+ck_assert_int_eq(*fsm, start);
+
+# test field_0
+UserAction_t action = Start;
+bool hold = 0;
+userInput(action, hold);
+InsideGameInfo_t *tetris = get_instance_tetris();
+ck_assert_ptr_ne(tetris->field, S21_NULL);
+ck_assert_ptr_ne(tetris->next, S21_NULL);
+
+# test tetris_act_0
+bool hold = 0;
+userInput(Start, hold);
+for (int i = 0; i < 80; i++) {
+    userInput(Down, hold);
+}
+GameInfo_t tetris = updateCurrentState();
+ck_assert_ptr_ne(tetris.field, S21_NULL);
+ck_assert_ptr_eq(tetris.next, S21_NULL);
+
+# test tetris_act_1
+bool hold = 0;
+char* action = "6066066766446466666666666666766366666666666666666676676336633636666666666666676766";
+for (int i = 0; i < (int)strlen(action); i++) {
+    userInput((int)(action[i]) - 48, hold);
+}
+GameInfo_t tetris = updateCurrentState();
+ck_assert_ptr_ne(tetris.field, S21_NULL);
+ck_assert_ptr_ne(tetris.next, S21_NULL);
+ck_assert_int_eq(tetris.score, 100);
+
+# test tetris_act_2
+bool hold = 0;
+char* action = "2";
+for (int i = 0; i < (int)strlen(action); i++) {
+    userInput((int)(action[i]) - 48, hold);
+}
+GameInfo_t tetris = updateCurrentState();
+ck_assert_ptr_eq(tetris.field, S21_NULL);
+ck_assert_ptr_eq(tetris.next, S21_NULL);
+ck_assert_int_eq(tetris.score, 0);
+
+# test tetris_act_3
+bool hold = 0;
+char* action = "606664646664664676633676646466666766666666366666666666676736633636636666666666666667676762";
+for (int i = 0; i < (int)strlen(action); i++) {
+    userInput((int)(action[i]) - 48, hold);
+}
+GameInfo_t tetris = updateCurrentState();
+ck_assert_ptr_eq(tetris.field, S21_NULL);
+ck_assert_ptr_eq(tetris.next, S21_NULL);
+ck_assert_int_eq(tetris.score, 100);
+
+# test tetris_act_4
+bool hold = 0;
+char* action = "60666666666166661666662";
+for (int i = 0; i < (int)strlen(action); i++) {
+    userInput((int)(action[i]) - 48, hold);
+}
+GameInfo_t tetris = updateCurrentState();
+ck_assert_ptr_eq(tetris.field, S21_NULL);
+ck_assert_ptr_eq(tetris.next, S21_NULL);
+
+# test tetris_act_5
+bool hold = 0;
+char* action = "02";
+for (int i = 0; i < (int)strlen(action); i++) {
+    userInput((int)(action[i]) - 48, hold);
+}
+GameInfo_t tetris = updateCurrentState();
+ck_assert_ptr_eq(tetris.field, S21_NULL);
+ck_assert_ptr_eq(tetris.next, S21_NULL);
+ck_assert_int_eq(tetris.score, 0);
+
+# test tetris_act_6
+bool hold = 0;
+char* action = "6606336636336676336663466446662";
+for (int i = 0; i <= (int)strlen(action); i++) {
+    userInput((int)(action[i]) - 48, hold);
+}
+GameInfo_t tetris = updateCurrentState();
+ck_assert_ptr_eq(tetris.field, S21_NULL);
+ck_assert_ptr_eq(tetris.next, S21_NULL);
+ck_assert_int_eq(tetris.score, 0);
