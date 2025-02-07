@@ -2,7 +2,6 @@
  * \file
  * \brief header file of s21_tetris library
  * @author https://github.com/Nfcz
- * 
  */
 #ifndef TETRIS_H
 #define TETRIS_H
