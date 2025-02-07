@@ -16,6 +16,18 @@ if you want to play, type
 make play
 ```
 
+## key's
+key     |command
+--------|----
+"enter" | start game
+\>      | move figure right
+<       | move figure left
+\\/     | move figure to the bottom
+"space" | rotate figure
+"p"     | pause
+"q"     | quit game
+
+
 ## documentation
 if you want to read documentation firstly check, that you have `doxygen`
 ```shell
@@ -27,5 +39,16 @@ make dvi
 ```
 if you don't have `open` installed, open **src/documentation/dvi/html/index.html** manually
 
+# testing
+for testing in make file in 31 line delete `#`
+``` shell
+TESTING = #-DTESTING
+------
+TESTING = -DTESTING
+```
+and reinstall game
+``` shell
+make rebuild
+```
 
 @author https://github.com/Nfcz

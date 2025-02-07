@@ -28,7 +28,7 @@ PKG_FLAG = $(shell pkg-config --cflags --libs check)
 # PKG_FLAG = $(shell pkg-config --cflags --libs check) -lm
 
 LOGS = #-DLOGS
-TESTING = -DTESTING
+TESTING = #-DTESTING
 
 
 all: $(lib_name)

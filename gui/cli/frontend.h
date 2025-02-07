@@ -6,23 +6,62 @@
 #define TETRIS_FRONTEND_H
 #include <ncurses.h>
 #include <stdio.h>
-#include <time.h>
 
 #include "../../brick_game/tetris/tetris.h"
 
 #define BACKGROUND_PAIR 0
-#define FIG_N_I_PAIR 160
-#define FIG_N_T_PAIR 20
-#define FIG_N_L_PAIR 11
-#define FIG_N_R_PAIR 208
-#define FIG_N_Z_PAIR 53
-#define FIG_N_S_PAIR 22
-#define FIG_N_O_PAIR 212
+#define FRAME_PAIR NUM_OF_FIGURES + 1
+#define FRAME_COLOR 244
+#define FIG_N_I_COLOR 160
+#define FIG_N_T_COLOR 20
+#define FIG_N_L_COLOR 11
+#define FIG_N_R_COLOR 208
+#define FIG_N_Z_COLOR 53
+#define FIG_N_S_COLOR 22
+#define FIG_N_O_COLOR 212
+
+#define ESC_BUTTON 27
+#define ENTER_BUTTON 10
 
 /**
  * \defgroup front
  * @{
  */
+
+/**
+ * \brief start window settings
+ */
+void windowSettings();
+
+/**
+ * \brief check keyboard and write it to the enum 'UserAction_t'
+ * \param[out] action action that happened
+ */
+int getPlayer(UserAction_t *action);
+
+/**
+ * \brief print current game of tetris
+ * \param[in] tetris game of tetris, that should be printed
+ */
+void printGame(GameInfo_t tetris);
+
+/**
+ * \brief print frame for game over and start mode
+ */
+void printFilling();
+
+/**
+ * \brief print frame for game and pause mode
+ */
+void printFrame();
+
+/**
+ * \brief print statistik of game
+ *
+ * print score, hight score, level, and pause status
+ */
+void printStart();
+
 /**
  * \brief function that print field with ncurses
  *
@@ -31,51 +70,38 @@
  *
  * \param[in] tetris game of tetris, that should be printed
  */
-void print_field(GameInfo_t tetris);
-
-/**
- * \brief function that print statistics
- *
- * print score, high score, and preview of new figure
- *
- * \param[in] tetris game of tetris, that should be printed
- */
-void print_stat(GameInfo_t tetris);
+void printField(GameInfo_t tetris);
 
 /**
  * \brief print preview of a next figure
  * \param[in] tetris game of tetris, that should be printed
  */
-void print_next(GameInfo_t tetris);
+void printNext(GameInfo_t tetris);
 
 /**
- * \brief print current game of tetris
+ * \brief print statistik of game
+ *
+ * print score, hight score, level, and pause status
+ *
  * \param[in] tetris game of tetris, that should be printed
  */
-void print_game(GameInfo_t tetris);
+void printStat(GameInfo_t tetris);
 
 /**
- * \brief check keyboard and write it to the enum 'UserAction_t'
- * \param[out] action action that happened
- */
-int get_player(UserAction_t *action);
-
-/**
- * \brief check tick time
+ * \brief function that print pause window
  *
- * check is time from last update is more than tick time
- * \param[inout] t_previous time of last tick
- * \param[in] speed curent speed of game
+ * print "pause" in the center of the board
  */
-int now_is_tick_time(struct timespec *t_previous, int speed);
+void printPause();
 
 /**
- * \brief start window settings
+ * \brief function that print field with ncurses
+ *
+ * print score hight score6 when game is over
+ *
+ * \param[in] tetris game of tetris, that should be printed
  */
-void window_settings();
-
-void printttt();
-
+void printGameOver(GameInfo_t tetris);
 ///@}
 
 #endif
