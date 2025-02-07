@@ -1,11 +1,17 @@
 /**
  * \file
  * \brief header file of s21_tetris library
+ * @author https://github.com/Nfcz
+ * 
  */
 #ifndef TETRIS_H
 #define TETRIS_H
+// #define _POSIX_C_SOURCE 199309L
+// #define __USE_POSIX199309
+// #define _GNU_SOURCE
 #include <stdbool.h>
 #include <stdio.h>
+#include <time.h>
 
 #define S21_NULL (void *)0
 #define HEIGHT 20
@@ -19,8 +25,9 @@
 #define FIG_N_Z 5
 #define FIG_N_S 6
 #define FIG_N_O 7
-#define FILE_NAME_FOR_SCORE "tetris_high_score.txt"
-#define FILE_NAME_FOR_LOGS "tetris_log.txt"
+#define FILE_NAME_FOR_SCORE "tetrisHighScore.txt"
+#define FILE_NAME_FOR_LOGS "tetrisLog.txt"
+#define NO_INF_WHILE 1000
 
 /**
  * \brief enum of all possible state in finite state machine of tetris
@@ -32,9 +39,9 @@ typedef enum {
   attaching,  ///< attaching falling figure to stopped figure
   shift,      ///< shift falling figure down
   pause,      ///< game pause
-  gameover,   ///< end of this game
+  gameOver,   ///< end of this game
   finish      ///< end of this program run
-} finite_state_machine;
+} FiniteStateMachine;
 
 /**
  *\brief Enum, that store all possible button on console
@@ -51,19 +58,29 @@ typedef enum {
 } UserAction_t;
 
 /**
+ * \brief struct that store input to fsm
+ *
+ * timer it means it inside call from timer;
+ */
+typedef struct {
+  UserAction_t action;  ///< action of player
+  int shift;            ///< 1 if timer, 0 if player
+} InputToFsm_t;
+
+/**
  * \brief API struct, that store output game info for front
  *
  * This struct store information to display a game. Used as a link between
  * front and back. Not used for counting game.
  */
 typedef struct {
-  int **field;     ///< result field with falling figure and stopt blokes
-  int **next;      ///< next figure, to show preview
-  int score;       ///< score of game
-  int high_score;  ///< highest score in game in this installation
-  int level;       ///< level of game
-  int speed;       ///< speed of game
-  int pause;       ///< 1 if game on pause, 0 if it's not
+  int **field;    ///< result field with falling figure and stopt blokes
+  int **next;     ///< next figure, to show preview
+  int score;      ///< score of game
+  int highScore;  ///< highest score in game in this installation
+  int level;      ///< level of game
+  int speed;      ///< speed of game
+  int pause;      ///< 1 if game on pause, 0 if it's not
 } GameInfo_t;
 
 /**
@@ -74,18 +91,23 @@ typedef struct {
 typedef struct {
   int field[HEIGHT]
            [WIGHT];  ///< result field with falling figure and stopt blokes
-  int next[SIZE_F][SIZE_F];         ///< next figure, to show preview
-  int present_fig[SIZE_F][SIZE_F];  ///<
-  int fig_num;          ///< figure number of figure, that is falling down
-  int preview_fig_num;  ///< figure number, that is on preview
-  int x;           ///< the x coordinate of hight left zone of falling figure
-  int y;           ///< the y coordinate of hight left zone of falling figure
-  int score;       ///< score of game
-  int high_score;  ///< highest score in game in this installation
-  int level;       ///< level of game
-  int speed;       ///< speed of game
-  int pause;       ///< 1 if game on pause, 0 if it's not
+  int next[SIZE_F][SIZE_F];        ///< next figure, to show preview
+  int presentFig[SIZE_F][SIZE_F];  ///<
+  int figNum;         ///< figure number of figure, that is falling down
+  int previewFigNum;  ///< figure number, that is on preview
+  int x;              ///< the x coordinate of hight left zone of falling figure
+  int y;              ///< the y coordinate of hight left zone of falling figure
+  int score;          ///< score of game
+  int highScore;      ///< highest score in game in this installation
+  int level;          ///< level of game
+  int speed;          ///< speed of game
+  int pause;          ///< 1 if game on pause, 0 if it's not
 } InsideGameInfo_t;
+
+/**
+ * \defgroup back Backend
+ * @{
+ */
 
 /**
  * \defgroup Front-Back Functions fo cooperate frontend and backend
@@ -102,8 +124,8 @@ typedef struct {
  * \brief function that updates game info for correct output
  *
  * this function make new example of `GameInfo_t` with data from
- * `InsideGameInfo_t` 
- * \warning should be called only by timer of shift 
+ * `InsideGameInfo_t`
+ * \warning should be called only by timer of shift
  * \return curent info of tetris game
  */
 GameInfo_t updateCurrentState();
@@ -134,13 +156,13 @@ void userInput(UserAction_t action, bool hold);
  * make static int HEIGHT x WIGHT for result field
  * \return array fo field with zeros
  */
-int **get_instance_field();
+int **getInstanceField();
 /**
  * \brief make static array for output figure
  * make static int SIZE_F x SIZE_F for result next figure
  * \return array for figure with zeros
  */
-int **get_instance_figure();
+int **getInstanceFigure();
 /**
  * @}
  * \defgroup output_filling functions fill arrays for output
@@ -151,21 +173,21 @@ int **get_instance_figure();
 /**
  * \brief fill result block of field with data from inside field
  * Add data from `InsideGameInfo_t` to the result field. Glues the figure to the
- * field 
+ * field
  * \return filled block
  */
-void block_of_field_output(int i, int j);
+void blockOfFieldOutput(int i, int j);
 /**
  * \brief fill result field with data from inside field
  * Add data from `InsideGameInfo_t` to the result field. Glues the figure to the
  * field \return filled field
  */
-int **field_output();
+int **fieldOutput();
 /**
  * \brief fill result figure with data from inside next
  * \return filled field
  */
-int **next_output();
+int **nextOutput();
 /**
  * @}
  * @}
@@ -182,13 +204,13 @@ int **next_output();
  * - if pressed `start` go to `spawn`
  * - if pressed `terminate` go to `finish`
  */
-void on_start_state();
+void onStartState();
 /**
  * \brief function that operate on spawn state
  * - if nothing pressed (that means time is up) go to `moving`
  * - if pressed `terminate` go to `finish`
  */
-void on_spawn_state();
+void onSpawnState();
 /**
  * \brief function that operate on moving state
  * - if nothing pressed (that means time is up) go to `shift`
@@ -197,14 +219,14 @@ void on_spawn_state();
  * - if pressed `Left`, `Right`, `Down` go to `moving`, and make move of figure
  * - if pressed `Action` go to `moving` rotate and check collision
  */
-void on_moving_state();
+void onMovingState();
 /**
  * \brief function that operate on shifting state
  * - if nothing pressed (that means time is up), move figure down, check
  * collision and go to `attaching` or `moving`
  * - if pressed `Terminate` go to `finish`
  */
-void on_shifting_state();
+void onShiftingState();
 /**
  * \brief function that operate on pause state
  *
@@ -212,33 +234,43 @@ void on_shifting_state();
  * - if pressed `Terminate` go to `finish`
  * - if pressed `Pause` go to `moving`
  */
-void on_pause_state();
+void onPauseState();
 /**
  * \brief function that operate on attaching state
  * - if nothing pressed (that means time is up), check can figure go to field,
- * and can new figure appear. If yes to both -> `spawn`, if no `gameover`
+ * and can new figure appear. If yes to both -> `spawn`, if no `gameOver`
  * - if pressed `Terminate` go to `finish`
  */
-void on_attaching_state();
+void onAttachingState();
 /**
- * \brief function that operate on gameover state
+ * \brief function that operate on game over state
  * - if pressed `Terminate` go to `finish`
  * - if pressed `Start` go to `start`
  */
-void on_game_over_state();
-/**
- * \brief function that operate on finish state
- *
- * do nothing
- */
-void on_game_finish_state();
+void onGameOverState();
 /**
  * \brief function the make next step in finite-state machine
  *
  * checking current state and sending to local function
  */
-void tetris_act();
+void tetrisAct();
 ///@}
+
+/**
+ * \brief function the make FSM do shift by timer
+ *
+ * making intput to FSM that FSM would be shifting figure properly.
+ * calling in a while timer
+ */
+void shifter();
+
+/**
+ * \brief function the make FSM do shift of to bottom
+ *
+ * Shift figure to the bottom unlit it collision.
+ * Calling collision in while
+ */
+void shiftToBottom();
 
 /**
  * \defgroup singleton Singleton's
@@ -251,21 +283,29 @@ void tetris_act();
  * make local static version of struct `InsideGameInfo_t`
  * \return poitier to static version of inside game info
  */
-InsideGameInfo_t *get_instance_tetris();
+InsideGameInfo_t *getInstanceTetris();
 /**
  * \brief get instance of input to fsm struct
  *
  * make local static version of struct `input_to_fsm`
  * \return poitier to static version of input to fsm
  */
-UserAction_t *get_instance_input_to_fsm();
+InputToFsm_t *getInstanceInputToFsm();
 /**
  * \brief get state of finite state machine
  *
- * make local static version of struct `finite_state_machine`
+ * make local static version of struct `FiniteStateMachine`
  * \return poitier to static version of state machine in FSM
  */
-finite_state_machine *get_instance_fsm();
+FiniteStateMachine *getInstanceFsm();
+
+/**
+ * \brief get time struct
+ *
+ * make local static version of `struct timespec` for saving previous shift time
+ * \return poitier to static version of previous shift time
+ */
+struct timespec *getTimePrev();
 ///@}
 
 /**
@@ -277,12 +317,12 @@ finite_state_machine *get_instance_fsm();
  * \brief function with all figures
  *
  * function, that on input have number of needed block, and number of needed
- * figure and return block 
- * \param[in] number_of_fig number of figure 
- * \param[in] num_block number of block in figure 
+ * figure and return block
+ * \param[in] numOfFig number of figure
+ * \param[in] blockNum number of block in figure
  * \return block that in needed place
  */
-int block_of_fig_t(int number_of_fig, int num_block);
+int blocksOfFig(int numOfFig, int blockNum);
 ///@}
 
 /**
@@ -294,7 +334,7 @@ int block_of_fig_t(int number_of_fig, int num_block);
  * \brief fill game with starting values
  * fill all the field of `InsideGameInfo_t` with stating values
  */
-void fill_tetris();
+void fillTetris();
 /**
  * \defgroup high_score initialization of high score
  * \brief initialization of high score from file
@@ -307,20 +347,23 @@ void fill_tetris();
  * \warning if in file something else, except ACHII character from 48 to 57,
  * stoped reading
  */
-int str_to_int(char *str);
+int strToInt(char *str);
 /**
  * \brief open a file, read score
  *
- * Open a file for high score and read string, call `str_to_int` to make integer
+ * Open a file for high score and read string, call `strToInt` to make integer
  * from string
+ *
+ * \return 1 if okey, 0 if can't open and create file
  */
-void get_high_score();
+int getHighScore();
 /**
  * \brief write high score curent game to file
  *
  * write high score from
+ * \return 1 if okey, 0 if can't open and create file
  */
-void write_high_score();
+int writeHighScore();
 ///@}
 ///@}
 
@@ -335,21 +378,21 @@ void write_high_score();
  *
  * get spawning figure on right height
  */
-void get_right_height();
+void getRightHeight();
 /**
  * \brief spawn new figure to preview
  */
-void new_fig_to_preview();
+void newFigToPreview();
 /**
  * \brief copy figure from preview to falling figure
  */
-void fig_from_preview_to_game();
+void figFromPreviewToGame();
 /**
  * \brief spawn figure
  *
  * copy figure from preview to falling figure, and spawn new figure to preview
  */
-void spawn_figure();
+void spawnFigure();
 ///@}
 
 /**
@@ -361,27 +404,27 @@ void spawn_figure();
 /**
  * \brief move figure left
  */
-void move_fig_left();
+void moveFigLeft();
 /**
  * \brief move figure right
  */
-void move_fig_right();
+void moveFigRight();
 /**
  * \brief move figure down
  */
-void move_fig_down();
+void moveFigDown();
 /**
  * \brief move figure up
  */
-void move_fig_up();
+void moveFigUp();
 /**
  * \brief rotate figure
  */
-void rotate_fig();
+void rotateFig();
 /**
  * \brief unrotate figure
  */
-void unrotate_fig();
+void unRotateFig();
 ///@}
 
 /**
@@ -395,7 +438,7 @@ void unrotate_fig();
  * \param j weight if checking block
  * \return 1 if collision, 0 if not
  */
-int block_collision(int i, int j);
+int blockCollision(int i, int j);
 /**
  * \brief check collision between figure and field
  * \return 1 if collision, 0 if not
@@ -407,12 +450,12 @@ int collision();
  * \param j weight if checking block
  * \return 0 if block out of the field, 1 if not
  */
-int block_field(int i, int j);
+int blockField(int i, int j);
 /**
  * \brief Glues the falling figure to the field
  * \return 0 if figure out of the field, 1 if not
  */
-int fig_to_field();
+int figToField();
 ///@}
 
 /**
@@ -421,18 +464,27 @@ int fig_to_field();
  */
 /**
  * \brief count speed from the level
+ *
+ * speed longness of one tick in milliseconds
  */
-void get_speed();
+void getSpeed();
 /**
  * \brief get level from the score
  */
-void check_level();
+void checkLevel();
 /**
  * \brief checking if first line is empty
  *
  * 1 if empty, 0 if not
  */
-int first_line_is_empty();
+int firstLineIsEmpty();
+/**
+ * \brief check tick time
+ *
+ * check is time from last update is more than tick time
+ * \return count of tick that have be done
+ */
+int countOfTick();
 ///@}
 
 /**
@@ -444,25 +496,25 @@ int first_line_is_empty();
  * \param[in] height the height of line that should be check
  * \return 1 if line is complete, 0 if not
  */
-int this_line_is_complete(int height);
+int thisLineIsComplete(int height);
 /**
  * \brief checking all lines for completness
  *
  * if for checking all lines from lowest to heist, in while cheek lines and
  * shift if complete
  */
-void check_complete_lines();
+void checkCompleteLines();
 /**
  * \brief shift rest of field
  *
  * shifting the rest of the field, whn one line is dropped
  * \param[in] height height the height of line that should be dropped
  */
-void shift_rest_of_field(int height);
+void shiftRestOfField(int height);
 /**
  * \brief count number of dropped lines to the score
  */
-void complete_lines_to_score(int complete_lines);
+void completeLinesToScore(int complete_lines);
 ///@}
 
 /**
@@ -472,13 +524,14 @@ void complete_lines_to_score(int complete_lines);
 /**
  * \brief make pause = 1 in tetris info
  */
-void make_pause();
+void makePause();
 /**
  * \brief make pause = 0 in tetris info
  */
-void make_unpause();
+void makeUnPause();
 ///@}
 
+#ifdef LOGS
 /**
  * \defgroup log log
  * @{
@@ -486,7 +539,9 @@ void make_unpause();
 /**
  * \brief print logs to the log file
  */
-void print_log(char *message);
+void printLog(char *message);
+#endif  // LOGS
+///@}
 ///@}
 
 #endif  // TETRIS_H

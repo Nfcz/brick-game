@@ -11,7 +11,7 @@ if you in folder, type:
 ```shell
 make install
 ```
-and then if you want to play, type
+if you want to play, type
 ```shell
 make play
 ```
@@ -27,57 +27,5 @@ make dvi
 ```
 if you don't have `open` installed, open **src/documentation/dvi/html/index.html** manually
 
-## figures in tetris
 
-```c
-i
-  *  
-  *  
-  *  
-  *  
-     
-
-t - blue
-     
-  *  
- *** 
-     
-     
-
-l - yellow
-     
- **  
-  *  
-  *  
-     
-
-r - orange
-     
-  ** 
-  *  
-  *  
-     
-
-z - purple
-     
- **  
-  ** 
-     
-     
-
-s - green
-     
-  ** 
- **  
-     
-     
-
-o - pink
-
- **  
- **  
-     
-```
-
-
-@autor https://github.com/Nfcz
+@author https://github.com/Nfcz

@@ -11,38 +11,28 @@
  * in main we initialize front and back and then in a `while` display game.
  */
 int main() {
-  // log file
 #ifdef LOGS
   FILE *fp = fopen(FILE_NAME_FOR_LOGS, "w");
   if (fp) {
     fclose(fp);
   }
-#endif //LOGS
+#endif  // LOGS
 
-  window_settings();
+  windowSettings();
 
-  // init game, action structs
+  // init game, action struct
   GameInfo_t tetris = updateCurrentState();
   UserAction_t action = {0};
   bool hold = 0;
 
-  // start the timer
-  struct timespec t_previous = {0};
-  clock_gettime(CLOCK_MONOTONIC, &t_previous);
-
-  print_game(tetris);
+  printGame(tetris);
 
   while (tetris.field || tetris.next) {
-    if (get_player(&action)) {
+    if (getPlayer(&action)) {
       userInput(action, hold);
-      tetris = updateCurrentState();
-      print_game(tetris);
     }
-    if (now_is_tick_time(&t_previous, tetris.speed)) {
-      userInput(Down, hold);  // for shift
-      tetris = updateCurrentState();
-      print_game(tetris);
-    }
+    tetris = updateCurrentState();
+    printGame(tetris);
   }
   endwin();
   return 0;

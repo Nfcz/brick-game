@@ -1,17 +1,29 @@
 # finite-state machine table
 
-state\input | Start     | Pause | Terminate | Left  | Right | Up    | Down  | Action
-------------|-----------|-------|-----------|-------|-------|-------|-------|-------
-start       |   spawn   |   -   |finish     |   -   |   -   |   -   |   -   |   -   |
-spawn       |moving     |moving |finish     |moving |moving |moving |moving |moving |
-moving      |   -       |pause  |finish     |moving |moving |   -   |shift  |moving |
-attaching   |spawn/gameovere|spawn/gameovere|finish|spawn/gameovere|spawn/gameovere|spawn/gameovere|spawn/gameovere|spawn/gameovere|
-shift       |moving     |moving |finish     |moving |moving |moving |moving |moving |
-pause       |   -       |moving |finish     |   -   |   -   |   -   |   -   |   -   |
-gameover    |start      |   -   |finish     |   -   |   -   |   -   |   -   |   -   |  
+state / input + recall| Start | Pause | Terminate | Left  | Right | Up    | Down  | Action| Timer | recall|
+------------|-------|-------|-----------|-------|-------|-------|-------|-------|-------|-------|
+start       |spawn  |   -   |finish     |   -   |   -   |   -   |   -   |   -   |   -   | NO
+spawn       |moving |moving |finish     |moving |moving |moving |moving |moving |moving | YES
+moving      |   -   |pause  |finish     |moving |moving |   -   |moving |moving / attaching|shift  | NO
+attaching   |spawn / gameOver|spawn / gameOver|finish     |spawn / gameOver|spawn / gameOver|spawn / gameOver|spawn / gameOver|spawn / gameOver|spawn / gameOver| YES
+shift       |moving / attaching|moving / attaching|finish     |moving / attaching|moving / attaching|moving / attaching|moving / attaching|moving / attaching|moving / attaching| YES
+pause       |   -   |moving |finish     |   -   |   -   |   -   |   -   |   -   |   -   | NO
+gameOver    |start  |   -   |finish     |   -   |   -   |   -   |   -   |   -   |   -   | NO
 
 
 # comments
-If the pressed button was only used to move to the next state, we save the if and call `void tetris_act();` a second time to process it correctly.
+## Recall
+Recall used from being between calls n 1 of 4 "processed" positions:
+- start
+- moving
+- pause
+- gameOver
 
-`finish` is not active state, it is the exit of finite-state machine
+that way spawn and attaching processed faster - from 1 outside call
+
+## Timer
+Timer is used then `InputToFsm_t.timer` is 1, that mean that call was from `userInput`, or `updateCurrentState`, when before the action we should shift figure.
+
+## `finish`
+
+`finish` is not active state, it is the exit of finite-state machine.

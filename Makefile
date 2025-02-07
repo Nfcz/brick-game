@@ -1,8 +1,8 @@
 SHELL:= /bin/bash
 
-COMP = gcc -g
+COMP = gcc -g $(LOGS) $(TESTING)
 FLAGS = -Werror -Wextra -Wall -std=c11
-FLAGS_C = $(FLAGS) -c  
+FLAGS_C = $(FLAGS) -c   
 
 BACK_FILE_SOURSE = brick_game/tetris/*.c
 
@@ -20,58 +20,65 @@ MAIN_FILE_SOURSE = main.c
 MAIN_FILE_OBJ = main.o
 
 PROGECT_NAME_DIST = brick_game_1.tar.gz
+PROGECT_NAME_OUT = tetris.out
 
 UNAME_S := $(shell uname -s)
 
-TEST_LIB_FLAGS = $(shell pkg-config --cflags --libs check)
-# TEST_LIB_FLAGS = $(shell pkg-config --cflags --libs check) -lm
+PKG_FLAG = $(shell pkg-config --cflags --libs check)
+# PKG_FLAG = $(shell pkg-config --cflags --libs check) -lm
+
+LOGS = #-DLOGS
+TESTING = -DTESTING
 
 
-#  all, install, uninstall, clean, dvi, dist, test, gcov_report
-all: clean_test clean test
+all: $(lib_name)
 
-play: game.out
-	./game.out
+play: $(PROGECT_NAME_OUT) 
+	./$(PROGECT_NAME_OUT)
 
-install: game.out
+install: $(PROGECT_NAME_OUT)
 
 uninstall: clean clean_test
-	-rm -rf s21_tetris.a
+	-rm -rf $(lib_name) tetrisHighScore.txt
 
 rebuild: uninstall install
 
-game.out: $(lib_name) $(FRONT_FILE_OBJ) $(MAIN_FILE_OBJ)
-	$(COMP) $(FLAGS) $(MAIN_FILE_OBJ) $(FRONT_FILE_OBJ) $(lib_flag) $(TEST_LIB_FLAGS) -lncurses -o game.out
+$(PROGECT_NAME_OUT): $(lib_name) $(FRONT_FILE_OBJ) $(MAIN_FILE_OBJ)
+	$(COMP) $(FLAGS) $(MAIN_FILE_OBJ) $(FRONT_FILE_OBJ) $(lib_flag) -lncurses -o $(PROGECT_NAME_OUT) $(PKG_FLAG)
 
 $(MAIN_FILE_OBJ): $(MAIN_FILE_SOURSE)
-	$(COMP) $(FLAGS_C) $(MAIN_FILE_SOURSE) -o $(MAIN_FILE_OBJ)
+	$(COMP) $(FLAGS_C) $(LODS) $(MAIN_FILE_SOURSE) -o $(MAIN_FILE_OBJ) $(PKG_FLAG)
+	# $(COMP) $(FLAGS_C) $(MAIN_FILE_SOURSE) -o $(MAIN_FILE_OBJ) $(PKG_FLAG)
 
 $(FRONT_FILE_OBJ): $(FRONT_FILE_SOURSE)
-	$(COMP) $(FLAGS_C) $(FRONT_FILE_SOURSE) -o $(FRONT_FILE_OBJ)
+	$(COMP) $(FLAGS_C) $(FRONT_FILE_SOURSE) -o $(FRONT_FILE_OBJ) $(PKG_FLAG)
 
 test: $(lib_name) $(BACK_TEST_FILE_OBJ)
-	$(COMP) $(BACK_TEST_FILE_OBJ) $(lib_flag) -lcheck
+	$(COMP) $(BACK_TEST_FILE_OBJ) $(lib_flag) -lcheck  -lm $(PKG_FLAG)
 	-./a.out
 
 $(BACK_TEST_FILE_OBJ): $(BACK_TEST_FILE_C)
-	$(COMP) $(FLAGS_C) $(BACK_TEST_FILE_C) -o $(BACK_TEST_FILE_OBJ)	
+	$(COMP) $(FLAGS_C) $(BACK_TEST_FILE_C) -o $(BACK_TEST_FILE_OBJ)	$(PKG_FLAG)
 
 $(BACK_TEST_FILE_C): $(BACK_TEST_FILE_SOURSE)
 	checkmk $(BACK_TEST_FILE_SOURSE) > $(BACK_TEST_FILE_C)
 
 $(lib_name):
-	$(COMP) $(FLAGS_C) $(BACK_FILE_SOURSE)
+	$(COMP) $(FLAGS_C) $(BACK_FILE_SOURSE) $(PKG_FLAG)
 	ar rcs $(lib_name) *.o
 	ranlib $(lib_name)
 	rm -rf *.o
 
 gcov_report: $(FILE_SOURSE) $(BACK_TEST_FILE_OBJ)
-	$(COMP) $(FLAGS) -Wno-decimalop-truncation -Wno-memset-transposed-args -fprofile-arcs -ftest-coverage $(BACK_TEST_FILE_OBJ) $(BACK_FILE_SOURSE) -o gcov_report $(lib_flag) $(TEST_LIB_FLAGS)
+	$(COMP) $(FLAGS) -Wno-decimalop-truncation -Wno-memset-transposed-args -fprofile-arcs -ftest-coverage $(BACK_TEST_FILE_OBJ) $(BACK_FILE_SOURSE) -o gcov_report $(lib_flag) $(PKG_FLAG)
 	./gcov_report
 	lcov --directory . -t "gcov_report" -o gcov_report.info -c
 	genhtml -o report gcov_report.info
 	-rm -f *.gcno *.gcda gcov_report.info
 	-open report/index.html
+
+open: gcov_report
+	lynx report/index.html
 
 dvi: Doxyfile
 	doxygen
@@ -89,27 +96,19 @@ clean:
 clean_test:
 	-rm -rf $(BACK_TEST_FILE_C)
 
-leaks: test
-	leaks -atExit -- ./a.out
+leaks: $(PROGECT_NAME_OUT)
+	leaks -atExit -- ./$(PROGECT_NAME_OUT)
 
 valgrind: test
 	valgrind -s --trace-children=yes --track-fds=yes --track-origins=yes --leak-check=full --show-leak-kinds=all ./a.out
 
+cppcheck:
+	cppcheck --enable=all --suppress=missingIncludeSystem main.c gui/cli/frontend.c brick_game/tetris/*.c
+
 cl:
 	-@cp ../materials/linters/.clang-format ../src/.clang-format; \
-	clang-format -style=Google -i *.c */*/*.c */*/*.h; \
+	clang-format -style=Google -i *.c */*/*.c */*/*.h */*/*/*.h; \
 	rm .clang-format
-
-# test_lin: $(lib_name)
-# 	$(COMP) $(TEST_FILE_OBJ) -o a.out $(lib_decimal_flag) $(TEST_LIB) 
-
-# $(TEST_FILE_OBJ): $(TEST_FILE_C)
-# 	$(COMP) $(FLAGS_C) -Wno-stringop-truncation -Wno-memset-transposed-args $(TEST_FILE_C) -o $(TEST_FILE_OBJ) $(TEST_LIB) 
-
-# clean_for_linux:
-# 	-rm -rf *.o */*.o a.out *.a s21_decimal.a
 
 valgrind_lin: test_lin
 	valgrind -s --trace-children=yes --track-fds=yes --track-origins=yes --leak-check=full --show-leak-kinds=all --log-file=trash.log ./a.out
-# --tool=memcheck 
-#	valgrind --leak-check=full 
